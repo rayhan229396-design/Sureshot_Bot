@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Market Signal AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- সাইডবার -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>ProSignal<span>AI</span></span>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-item active">
+                    <i class="fas fa-bolt"></i>
+                    <span>Signals</span>
+                </div>
+                <div class="menu-item">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <span>History</span>
+                </div>
+                <div class="menu-item">
+                    <i class="fas fa-gear"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="status-dot online"></div>
+                <span>System Online</span>
+            </div>
+        </aside>
+        
+        <!-- মেইন কন্টেন্ট -->
+        <main class="main-content">
+            <!-- হেডার -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Market Signals</h1>
+                    <p>Real-time analysis powered by AI</p>
+                </div>
+                <div class="header-right">
+                    <div class="time-display" id="currentTime">
+                        <i class="fas fa-clock"></i>
+                        <span>Loading...</span>
+                    </div>
+                    <button class="btn-refresh" id="refreshBtn">
+                        <i class="fas fa-rotate"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- কন্ট্রোল প্যানেল -->
+            <div class="control-panel">
+                <div class="control-group">
+                    <label><i class="fas fa-coin"></i> Pair</label>
+                    <select id="pairSelect">
+                        {% for pair in pairs %}
+                        <option value="{{ pair }}" {% if loop.first %}selected{% endif %}>
+                            {{ pair }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label><i class="fas fa-clock"></i> Timeframe</label>
+                    <select id="timeframeSelect">
+                        {% for tf in timeframes %}
+                        <option value="{{ tf }}" {% if tf == '5m' %}selected{% endif %}>
+                            {{ tf }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button class="btn-analyze" id="analyzeBtn">
+                    <i class="fas fa-play"></i>
+                    Analyze
+                </button>
+            </div>
+            
+            <!-- সিগন্যাল কার্ড -->
+            <div class="signal-container">
+                <!-- সিগন্যাল কার্ড -->
+                <div class="signal-card" id="signalCard">
+                    <div class="signal-header">
+                        <span class="signal-label">Signal</span>
+                        <span class="signal-value" id="signalValue">WAIT</span>
+                    </div>
+                    
+                    <div class="signal-body">
+                        <div class="signal-price">
+                            <span class="price-label">Price</span>
+                            <span class="price-value" id="priceValue">0.0000</span>
+                        </div>
+                        
+                        <div class="signal-confidence">
+                            <div class="confidence-label">
+                                <span>Confidence</span>
+                                <span id="confidenceText">0%</span>
+                            </div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="signal-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Score</span>
+                                <span class="metric-value" id="scoreValue">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Trend</span>
+                                <span class="metric-value" id="trendValue">Neutral</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Regime</span>
+                                <span class="metric-value" id="regimeValue">Unknown</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="signal-footer">
+                        <div class="signal-reasons" id="reasonsList">
+                            <span class="no-reasons">Waiting for analysis...</span>
+                        </div>
+                        <div class="signal-time" id="signalTime">
+                            <i class="fas fa-clock"></i>
+                            <span>--:--:--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- এমটিএফ কার্ড -->
+                <div class="mtf-card" id="mtfCard">
+                    <div class="mtf-header">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Multi-Timeframe</span>
+                    </div>
+                    <div class="mtf-body" id="mtfBody">
+                        <div class="mtf-item">
+                            <span class="mtf-label">15m</span>
+                            <span class="mtf-value neutral" id="mtf15m">Neutral</span>
+                        </div>
+                        <div class="mtf-item">
+                            <span class="mtf-label">1h</span>
+                            <span class="mtf-value neutral" id="mtf1h">Neutral</span>
+                        </div>
+                        <div class="mtf-item">
+                            <span class="mtf-label">4h</span>
+                            <span class="mtf-value neutral" id="mtf4h">Neutral</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- সিগন্যাল হিস্ট্রি -->
+            <div class="history-section">
+                <div class="history-header">
+                    <h3><i class="fas fa-clock-rotate-left"></i> Signal History</h3>
+                    <span class="history-count" id="historyCount">0 signals</span>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">
+                        <i class="fas fa-inbox"></i>
+                        <span>No signals yet</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ফুটার -->
+            <footer class="footer">
+                <span>© 2026 Pro Market Signal AI</span>
+                <span class="footer-version">v2.0</span>
+                <span class="footer-timezone">GMT+6 (Dhaka)</span>
+            </footer>
+        </main>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
